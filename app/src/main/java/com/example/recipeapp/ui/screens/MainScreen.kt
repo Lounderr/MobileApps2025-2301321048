@@ -63,7 +63,7 @@ fun MainScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(Dimens.CardHeightMedium)
+                                .height(Dimens.CardHeightLarge)
                                 .padding(vertical = Dimens.PaddingSmall)
                                 .clickable { onMyRecipesClick() }
                         ) {

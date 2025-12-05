@@ -231,7 +231,7 @@ fun EditDialog(
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it },
-                label = { Text("New Value") },
+                label = { Text("New ${field.name.lowercase().capitalize()}") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = field != EditableField.INSTRUCTIONS,
                 minLines = if (field == EditableField.INSTRUCTIONS) 5 else 1

@@ -31,7 +31,7 @@ fun RecipeCategoryCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(Dimens.CardHeightMedium)
+            .height(Dimens.CardHeightSmall)
             .padding(vertical = Dimens.PaddingSmall)
             .clickable { onClick() }
     ) {
