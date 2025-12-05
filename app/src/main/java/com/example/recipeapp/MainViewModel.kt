@@ -4,8 +4,9 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.recipeapp.services.Category
-import com.example.recipeapp.services.recipeService
+import com.example.recipeapp.data.RecipeRepository
+import com.example.recipeapp.data.model.Category
+import com.example.recipeapp.data.network.RetrofitInstance
 import kotlinx.coroutines.launch
 
 data class MainState(
@@ -15,6 +16,7 @@ data class MainState(
 )
 
 class MainViewModel : ViewModel() {
+    private val repository = RecipeRepository(RetrofitInstance.api)
     private val _categoriesState = mutableStateOf(MainState())
     val categoriesState: State<MainState> = _categoriesState
 
@@ -25,10 +27,10 @@ class MainViewModel : ViewModel() {
     private fun fetchCategories() {
         viewModelScope.launch {
             try {
-                val response = recipeService.getCategories()
+                val categories = repository.getCategories()
                 _categoriesState.value = _categoriesState.value.copy(
                     loading = false,
-                    list = response.categories,
+                    list = categories,
                     error = null
                 )
             } catch (e: Exception) {

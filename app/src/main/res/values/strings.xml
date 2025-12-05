@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">RecipeApp</string>
+    <string name="hello">Hello!</string>
+    <string name="choose_a_recipe">Choose a recipe.</string>
+    <string name="error_msg">Error: %1$s</string>
+    <string name="recipes_title">%1$s Recipes</string>
+    <string name="category_area_format">%1$s | %2$s</string>
+    <string name="instructions">Instructions</string>
+    <string name="ingredients">Ingredients</string>
+    <string name="ingredient_item">• %1$s</string>
+    <string name="meal_image_content_desc">Image of %1$s</string>
 </resources>
