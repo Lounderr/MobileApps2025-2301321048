@@ -33,12 +33,12 @@ fun MainScreen(
 
     Column(modifier = modifier.padding(Dimens.PaddingMedium)) {
         Text(
-            text = stringResource(R.string.hello),
-            style = MaterialTheme.typography.displayLarge
+            text = stringResource(R.string.welcome_display),
+            style = MaterialTheme.typography.displayMedium
         )
         Text(
-            text = stringResource(R.string.choose_a_recipe),
-            style = MaterialTheme.typography.titleMedium
+            text = stringResource(R.string.welcome_subtitle),
+            style = MaterialTheme.typography.titleLarge
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
 

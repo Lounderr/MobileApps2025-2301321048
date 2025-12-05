@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">RecipeApp</string>
-    <string name="hello">Hello!</string>
-    <string name="choose_a_recipe">Choose a recipe.</string>
+    <string name="welcome_display">Explore Flavors</string>
+    <string name="welcome_subtitle">Cook. Eat. Repeat.</string>
     <string name="error_msg">Error: %1$s</string>
     <string name="recipes_title">%1$s Recipes</string>
     <string name="category_area_format">%1$s | %2$s</string>
