@@ -38,8 +38,13 @@ import com.example.recipeapp.data.local.RecipeEntity
 import com.example.recipeapp.ui.theme.Dimens
 import androidx.compose.material.icons.filled.Delete
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+
 enum class EditableField {
-    NAME, CATEGORY, INSTRUCTIONS, IMAGE
+    NAME, CATEGORY, INSTRUCTIONS
 }
 
 @Composable
@@ -52,6 +57,19 @@ fun MyRecipeDetailsScreen(
     var recipe by remember { mutableStateOf<RecipeEntity?>(null) }
     var editingField by remember { mutableStateOf<EditableField?>(null) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            uri?.let {
+                recipe?.let { currentRecipe ->
+                    viewModel.updateRecipeImage(currentRecipe, it, context)
+                    recipe = currentRecipe.copy(imageUrl = it.toString())
+                }
+            }
+        }
+    )
 
     LaunchedEffect(recipeId) {
         recipeId.toIntOrNull()?.let { id ->
@@ -76,7 +94,11 @@ fun MyRecipeDetailsScreen(
                             .height(Dimens.MealImageHeight)
                     )
                     IconButton(
-                        onClick = { editingField = EditableField.IMAGE },
+                        onClick = { 
+                            photoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(Dimens.PaddingSmall)
@@ -195,7 +217,6 @@ fun MyRecipeDetailsScreen(
                         EditableField.NAME -> currentRecipe.name
                         EditableField.CATEGORY -> currentRecipe.category ?: ""
                         EditableField.INSTRUCTIONS -> currentRecipe.instructions ?: ""
-                        EditableField.IMAGE -> currentRecipe.imageUrl ?: ""
                     },
                     onDismiss = { editingField = null },
                     onSave = { newValue ->
@@ -203,7 +224,6 @@ fun MyRecipeDetailsScreen(
                             EditableField.NAME -> currentRecipe.copy(name = newValue)
                             EditableField.CATEGORY -> currentRecipe.copy(category = newValue)
                             EditableField.INSTRUCTIONS -> currentRecipe.copy(instructions = newValue)
-                            EditableField.IMAGE -> currentRecipe.copy(imageUrl = newValue)
                         }
                         viewModel.updateRecipe(updatedRecipe)
                         recipe = updatedRecipe

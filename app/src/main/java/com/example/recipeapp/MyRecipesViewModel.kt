@@ -10,6 +10,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+import android.content.Context
+import android.net.Uri
+import java.io.File
+import java.util.UUID
+
 class MyRecipesViewModel(private val repository: LocalRecipeRepository) : ViewModel() {
 
     val allRecipes: StateFlow<List<RecipeEntity>> = repository.allRecipes
@@ -18,6 +23,23 @@ class MyRecipesViewModel(private val repository: LocalRecipeRepository) : ViewMo
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    fun updateRecipeImage(recipe: RecipeEntity, uri: Uri, context: Context) {
+        viewModelScope.launch {
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val fileName = "recipe_image_${UUID.randomUUID()}.jpg"
+            val file = File(context.filesDir, fileName)
+            
+            inputStream?.use { input ->
+                file.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            
+            val updatedRecipe = recipe.copy(imageUrl = file.absolutePath)
+            repository.update(updatedRecipe)
+        }
+    }
 
 //    fun addRecipe(name: String, category: String, instructions: String, imageUrl: String) {
 //        viewModelScope.launch {
