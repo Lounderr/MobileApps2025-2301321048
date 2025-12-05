@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +26,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.recipeapp.ui.theme.RecipeAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -33,10 +39,28 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             RecipeAppTheme {
+                val navController = rememberNavController()
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MainScreen(
+                    NavHost(
+                        navController = navController,
+                        startDestination = "main_screen",
                         modifier = Modifier.padding(innerPadding)
-                    )
+                    ) {
+                        composable("main_screen") {
+                            MainScreen(
+                                onCategoryClick = { category ->
+                                    navController.navigate("category_screen/$category")
+                                }
+                            )
+                        }
+                        composable(
+                            route = "category_screen/{categoryName}",
+                            arguments = listOf(navArgument("categoryName") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
+                            CategoryScreen(categoryName = categoryName)
+                        }
+                    }
                 }
             }
         }
@@ -44,7 +68,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
+fun MainScreen(
+    modifier: Modifier = Modifier,
+    onCategoryClick: (String) -> Unit
+) {
     Column(modifier = modifier.padding(16.dp)) {
         Text(
             text = "Hello!",
@@ -55,19 +82,24 @@ fun MainScreen(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.titleMedium
         )
         Spacer(modifier = Modifier.height(24.dp))
-        RecipeCategoryCard(title = "Breakfast")
-        RecipeCategoryCard(title = "Lunch")
-        RecipeCategoryCard(title = "Dinner")
+        RecipeCategoryCard(title = "Breakfast", onClick = { onCategoryClick("Breakfast") })
+        RecipeCategoryCard(title = "Lunch", onClick = { onCategoryClick("Lunch") })
+        RecipeCategoryCard(title = "Dinner", onClick = { onCategoryClick("Dinner") })
     }
 }
 
 @Composable
-fun RecipeCategoryCard(title: String, modifier: Modifier = Modifier) {
+fun RecipeCategoryCard(
+    title: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .height(160.dp)
             .padding(vertical = 8.dp)
+            .clickable { onClick() }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Image(
@@ -92,10 +124,23 @@ fun RecipeCategoryCard(title: String, modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+fun CategoryScreen(categoryName: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Selected Category: $categoryName",
+            style = MaterialTheme.typography.headlineMedium
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
     RecipeAppTheme {
-        MainScreen()
+        MainScreen(onCategoryClick = {})
     }
 }
