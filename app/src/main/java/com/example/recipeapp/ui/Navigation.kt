@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import com.example.recipeapp.ui.screens.CategoryScreen
 import com.example.recipeapp.ui.screens.MainScreen
 import com.example.recipeapp.ui.screens.MealDetailScreen
+import com.example.recipeapp.ui.screens.MyRecipesScreen
 
 @Composable
 fun RecipeApp(modifier: Modifier = Modifier) {
@@ -23,8 +24,14 @@ fun RecipeApp(modifier: Modifier = Modifier) {
             MainScreen(
                 onCategoryClick = { category ->
                     navController.navigate("category_screen/$category")
+                },
+                onMyRecipesClick = {
+                    navController.navigate("my_recipes_screen")
                 }
             )
+        }
+        composable("my_recipes_screen") {
+            MyRecipesScreen()
         }
         composable(
             route = "category_screen/{categoryName}",
