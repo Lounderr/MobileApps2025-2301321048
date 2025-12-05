@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +39,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.compose.AsyncImage
 import com.example.recipeapp.services.Category
+import com.example.recipeapp.services.Meal
 import com.example.recipeapp.ui.theme.RecipeAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -153,15 +155,73 @@ fun RecipeCategoryCard(
 }
 
 @Composable
-fun CategoryScreen(categoryName: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+fun CategoryScreen(
+    categoryName: String,
+    modifier: Modifier = Modifier,
+    viewModel: CategoryViewModel = viewModel()
+) {
+    val viewState by viewModel.categoryState
+
+    LaunchedEffect(categoryName) {
+        viewModel.fetchMeals(categoryName)
+    }
+
+    Column(modifier = modifier.padding(16.dp)) {
         Text(
-            text = "Selected Category: $categoryName",
-            style = MaterialTheme.typography.headlineMedium
+            text = "$categoryName Recipes",
+            style = MaterialTheme.typography.displayMedium
         )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        when {
+            viewState.loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            viewState.error != null -> {
+                Text(text = "Error: ${viewState.error}")
+            }
+            else -> {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(viewState.list) { meal ->
+                        MealCard(meal = meal)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MealCard(meal: Meal, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(vertical = 8.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            AsyncImage(
+                model = meal.strMealThumb,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.4f)),
+                contentAlignment = Alignment.BottomStart
+            ) {
+                Text(
+                    text = meal.strMeal,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color.White,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
     }
 }
 
