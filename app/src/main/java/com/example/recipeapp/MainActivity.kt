@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -40,6 +42,7 @@ import androidx.navigation.navArgument
 import coil.compose.AsyncImage
 import com.example.recipeapp.services.Category
 import com.example.recipeapp.services.Meal
+import com.example.recipeapp.services.MealDetail
 import com.example.recipeapp.ui.theme.RecipeAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -67,7 +70,19 @@ class MainActivity : ComponentActivity() {
                             arguments = listOf(navArgument("categoryName") { type = NavType.StringType })
                         ) { backStackEntry ->
                             val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
-                            CategoryScreen(categoryName = categoryName)
+                            CategoryScreen(
+                                categoryName = categoryName,
+                                onMealClick = { mealId ->
+                                    navController.navigate("meal_detail_screen/$mealId")
+                                }
+                            )
+                        }
+                        composable(
+                            route = "meal_detail_screen/{mealId}",
+                            arguments = listOf(navArgument("mealId") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val mealId = backStackEntry.arguments?.getString("mealId") ?: ""
+                            MealDetailScreen(mealId = mealId)
                         }
                     }
                 }
@@ -157,6 +172,7 @@ fun RecipeCategoryCard(
 @Composable
 fun CategoryScreen(
     categoryName: String,
+    onMealClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CategoryViewModel = viewModel()
 ) {
@@ -185,7 +201,10 @@ fun CategoryScreen(
             else -> {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(viewState.list) { meal ->
-                        MealCard(meal = meal)
+                        MealCard(
+                            meal = meal,
+                            onClick = { onMealClick(meal.idMeal) }
+                        )
                     }
                 }
             }
@@ -194,12 +213,17 @@ fun CategoryScreen(
 }
 
 @Composable
-fun MealCard(meal: Meal, modifier: Modifier = Modifier) {
+fun MealCard(
+    meal: Meal,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .height(200.dp)
             .padding(vertical = 8.dp)
+            .clickable { onClick() }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
@@ -223,6 +247,114 @@ fun MealCard(meal: Meal, modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+@Composable
+fun MealDetailScreen(
+    mealId: String,
+    viewModel: MealDetailViewModel = viewModel()
+) {
+    val viewState by viewModel.mealState
+
+    LaunchedEffect(mealId) {
+        viewModel.fetchMealDetails(mealId)
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        when {
+            viewState.loading -> {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+            viewState.error != null -> {
+                Text(
+                    text = "Error: ${viewState.error}",
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+            viewState.meal != null -> {
+                val meal = viewState.meal!!
+                LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                    item {
+                        AsyncImage(
+                            model = meal.strMealThumb,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = meal.strMeal,
+                            style = MaterialTheme.typography.displaySmall
+                        )
+                        Text(
+                            text = "${meal.strCategory} | ${meal.strArea}",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Instructions",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        Text(
+                            text = meal.strInstructions,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Ingredients",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                    }
+                    val ingredients = getIngredients(meal)
+                    items(ingredients) { ingredient ->
+                        Text(
+                            text = "• $ingredient",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun getIngredients(meal: MealDetail): List<String> {
+    val list = mutableListOf<String>()
+
+    val ingredients = listOf(
+        meal.strIngredient1 to meal.strMeasure1,
+        meal.strIngredient2 to meal.strMeasure2,
+        meal.strIngredient3 to meal.strMeasure3,
+        meal.strIngredient4 to meal.strMeasure4,
+        meal.strIngredient5 to meal.strMeasure5,
+        meal.strIngredient6 to meal.strMeasure6,
+        meal.strIngredient7 to meal.strMeasure7,
+        meal.strIngredient8 to meal.strMeasure8,
+        meal.strIngredient9 to meal.strMeasure9,
+        meal.strIngredient10 to meal.strMeasure10,
+        meal.strIngredient11 to meal.strMeasure11,
+        meal.strIngredient12 to meal.strMeasure12,
+        meal.strIngredient13 to meal.strMeasure13,
+        meal.strIngredient14 to meal.strMeasure14,
+        meal.strIngredient15 to meal.strMeasure15,
+        meal.strIngredient16 to meal.strMeasure16,
+        meal.strIngredient17 to meal.strMeasure17,
+        meal.strIngredient18 to meal.strMeasure18,
+        meal.strIngredient19 to meal.strMeasure19,
+        meal.strIngredient20 to meal.strMeasure20
+    )
+
+    ingredients.forEach { (ingredient, measure) ->
+        if (!ingredient.isNullOrBlank()) {
+            val text = if (!measure.isNullOrBlank()) "$measure $ingredient" else ingredient
+            list.add(text)
+        }
+    }
+    return list
 }
 
 @Preview(showBackground = true)
