@@ -14,11 +14,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,11 +30,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import coil.compose.AsyncImage
+import com.example.recipeapp.services.Category
 import com.example.recipeapp.ui.theme.RecipeAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -70,8 +77,11 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    onCategoryClick: (String) -> Unit
+    onCategoryClick: (String) -> Unit,
+    viewModel: MainViewModel = viewModel()
 ) {
+    val viewState by viewModel.categoriesState
+
     Column(modifier = modifier.padding(16.dp)) {
         Text(
             text = "Hello!",
@@ -82,15 +92,33 @@ fun MainScreen(
             style = MaterialTheme.typography.titleMedium
         )
         Spacer(modifier = Modifier.height(24.dp))
-        RecipeCategoryCard(title = "Breakfast", onClick = { onCategoryClick("Breakfast") })
-        RecipeCategoryCard(title = "Lunch", onClick = { onCategoryClick("Lunch") })
-        RecipeCategoryCard(title = "Dinner", onClick = { onCategoryClick("Dinner") })
+
+        when {
+            viewState.loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            viewState.error != null -> {
+                Text(text = "Error: ${viewState.error}")
+            }
+            else -> {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(viewState.list) { category ->
+                        RecipeCategoryCard(
+                            category = category,
+                            onClick = { onCategoryClick(category.strCategory) }
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
 @Composable
 fun RecipeCategoryCard(
-    title: String,
+    category: Category,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -102,8 +130,8 @@ fun RecipeCategoryCard(
             .clickable { onClick() }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_background),
+            AsyncImage(
+                model = category.strCategoryThumb,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -115,7 +143,7 @@ fun RecipeCategoryCard(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = title,
+                    text = category.strCategory,
                     style = MaterialTheme.typography.headlineSmall,
                     color = Color.White
                 )
@@ -141,6 +169,6 @@ fun CategoryScreen(categoryName: String, modifier: Modifier = Modifier) {
 @Composable
 fun MainScreenPreview() {
     RecipeAppTheme {
-        MainScreen(onCategoryClick = {})
+        // MainScreen(onCategoryClick = {})
     }
 }
