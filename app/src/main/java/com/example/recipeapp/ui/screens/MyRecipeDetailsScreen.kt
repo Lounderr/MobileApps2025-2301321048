@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.ui.platform.LocalContext
 
 enum class EditableField {
@@ -106,7 +107,13 @@ fun MyRecipeDetailsScreen(
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Edit Image",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+                                    shape = androidx.compose.foundation.shape.CircleShape
+                                )
+                                .padding(Dimens.PaddingSmall)
                         )
                     }
                 }
